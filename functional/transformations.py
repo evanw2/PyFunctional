@@ -564,32 +564,31 @@ def group_by_t(func):
     )
 
 
-def grouped_impl(wrap, size, sequence):
+def grouped_impl(size, sequence):
     """
     Implementation for grouped_t
-    :param wrap: wrap children values with this
     :param size: size of groups
     :param sequence: sequence to group
     :return: grouped sequence
     """
     iterator = iter(sequence)
-    try:
-        while True:
-            batch = islice(iterator, size)
-            yield list(chain((wrap(next(batch)),), batch))
-    except StopIteration:
-        return
+    while True:
+        batch = islice(iterator, size)
+        try:
+            head, tail = next(batch), batch
+            yield list(chain([head], tail))
+        except StopIteration:
+            return
 
 
-def grouped_t(wrap, size):
+def grouped_t(size):
     """
     Transformation for Sequence.grouped
-    :param wrap: wrap children values with this
     :param size: size of groups
     :return: transformation
     """
     return Transformation(
-        "grouped({0})".format(size), partial(grouped_impl, wrap, size), None
+        "grouped({0})".format(size), partial(grouped_impl, size), None
     )
 
 
